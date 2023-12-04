@@ -6,6 +6,7 @@ import random
 import string
 
 
+server_host_address = "srv.vpyar.ir"
 server_ip_address = "65.109.188.118"
 server_username = "root"
 server_password = "rNasnER9aKHMNpimKsqj"
@@ -70,6 +71,10 @@ def start(client: Client, message: Message):
                                  callback_data="GetTestConfig"),
             InlineKeyboardButton("💥اموزش فعال سازی",
                                  callback_data="activation_guide")
+        ],
+        [
+            InlineKeyboardButton("📣کانال ما", url="https://t.me/vpyar"),
+            InlineKeyboardButton("👨‍💻سفارش کافینگ شخصی ", url="https://t.me/vpyar_support")
         ]
     ]
 
@@ -92,17 +97,21 @@ def callback_handler(client, callback):
         new_username, new_password = create_user_on_linux_server(
             server_ip_address, server_username, server_password)
         client.send_message(
-            message.chat.id, f"نام کاربری: `{new_username}`\nرمز عبور: `{new_password}` \n `پورت : `993` , 995` \n تاریخ انقضا : {date.today()}\n\n@vpyarbot")
+            message.chat.id, f"هاست : `{server_host_address}`\nنام کاربری: `{new_username}`\nرمز عبور: `{new_password}` \n `پورت : `993` , 995` \n تاریخ انقضا : {date.today()}\n\n@vpyarbot")
         client.send_message(message.chat.id, "اکانتت امادس لذتشو ببر😎"  ,reply_markup=InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         "💥اموزش فعال سازی", callback_data="activation_guide")
-                ]
+                ],
+                [
+            InlineKeyboardButton("📣کانال ما", url="https://t.me/vpyar"),
+            InlineKeyboardButton("👨‍💻سفارش کافینگ شخصی ", url="https://t.me/vpyar_support")
+        ]
             ]
         ))
 
     elif data == "activation_guide":
         message.edit_text("درحال نمایش اموزش فعال سازی...")
-        client.send_message(
-            message.chat.id, "در اینجا اموزش فعال سازی قرار می‌گیرد.")
+        message.reply_video("https://dl.yozcourse.ir/config-1.mp4", caption="آموزش فعال سازی روی اندروید")
+        

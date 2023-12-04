@@ -1,0 +1,127 @@
+import telebot
+import paramiko
+import time
+import schedule
+import threading
+
+
+
+TOKEN = '6724802635:AAFA_s30tuoprHHjG9Gbf-Z6VJ4lDOVQo-4'
+bot = telebot.TeleBot(TOKEN)
+
+def save_user_info(name, username, ip, password):
+    with open('user_info.txt', 'a') as file:
+        file.write(f"{name}|{username}|{ip}|{password}\n")
+
+def get_credentials():
+    with open('user_info.txt', 'r') as file:
+        lines = file.readlines()
+        return lines
+
+def download_file_from_server(chat_id, name, username, ip, password):
+    try:
+        hostname = ip
+        port = 22
+
+        remote_file_path = '/etc/x-ui/x-ui.db'
+        local_file_path = f"{name}_x-ui.db"
+
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh_client.connect(hostname=hostname, port=port, username=username, password=password)
+
+        sftp_client = ssh_client.open_sftp()
+        sftp_client.get(remote_file_path, local_file_path)
+        sftp_client.close()
+
+        ssh_client.close()
+        
+        with open(local_file_path, 'rb') as file:
+            bot.send_document(chat_id, file)
+        
+        bot.send_message(chat_id, f"File downloaded from {remote_file_path} and sent to you successfully.")
+    except Exception as e:
+        bot.send_message(chat_id, f"Error: {str(e)}")
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Welcome! Please provide your information in this format: /add_server Name Username IP Password")
+
+@bot.message_handler(commands=['add_server'])
+def process_user_info(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Processing your information...")
+    try:
+        text = message.text.split(' ', 1)[1]
+        name, username, ip, password = text.split()
+        save_user_info(name, username, ip, password)
+        bot.send_message(chat_id, "Your information has been saved successfully!")
+    except (ValueError, IndexError):
+        bot.send_message(chat_id, "Please enter your information in the correct format: /add_server Name Username IP Password")
+
+@bot.message_handler(commands=['download'])
+def download(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Downloading file from server")
+    servers = get_credentials()
+    for server in servers:
+        name, username, ip, password = server.split('|')
+        bot.send_message(chat_id, f"Downloading file from {name}...")
+        download_file_from_server(chat_id, name, username, ip, password)
+    else:
+        bot.send_message(chat_id, "Download process completed for all servers!")
+
+@bot.message_handler(commands=['list_servers'])
+def list_servers(message):
+    chat_id = message.chat.id
+    servers = get_credentials()
+    if servers:
+        server_list = "\n".join([f"Name: {server.split('|')[2]}, IP: {server.split('|')[0]}" for server in servers])
+        bot.send_message(chat_id, f"List of servers:\n\n{server_list}")
+    else:
+        bot.send_message(chat_id, "No servers found!")
+        
+        
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    chat_id = message.chat.id
+    help_text = '''
+    Available commands:
+    /start - Start the bot
+    /add_server Name Username IP Password - Add a new server
+    /download - Download the file from the server
+    /list_servers - View the list of servers
+    /help - Show this help message
+    '''
+    bot.send_message(chat_id, help_text)
+    
+    
+def download_file():
+    try:
+        servers = get_credentials()
+        for server in servers:
+            name, username, ip, password = server.split('|')
+            download_file_from_server(int("1734062356"), name, username, ip, password)
+    except Exception as e:
+        print(f"Error: {str(e)}")
+def download_and_schedule():
+    schedule.every().hour.do(download_file)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+def start_bot():
+    print("Bot is running...")
+    print("==================================")
+    try:
+        bot.polling()
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+# ایجاد یک ترد جدید برای اجرای برنامه‌ریزی دانلود
+schedule_thread = threading.Thread(target=download_and_schedule)
+schedule_thread.start()
+
+# اجرای ربات تلگرام
+start_bot()
