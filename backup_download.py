@@ -1,9 +1,9 @@
 import telebot
-import paramiko
 import time
 import schedule
 import threading
-
+import paramiko
+from fabric import Connection
 
 
 TOKEN = '6724802635:AAFA_s30tuoprHHjG9Gbf-Z6VJ4lDOVQo-4'
@@ -20,28 +20,47 @@ def get_credentials():
 
 def download_file_from_server(chat_id, name, username, ip, password):
     try:
-        hostname = ip
-        port = 22
-
         remote_file_path = '/etc/x-ui/x-ui.db'
         local_file_path = f"{name}_x-ui.db"
 
+        print(name, username, ip, password)
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_client.connect(hostname=hostname, port=port, username=username, password=password)
+        ssh_client.connect(hostname=ip, port=22, username=username, password=password)
 
         sftp_client = ssh_client.open_sftp()
         sftp_client.get(remote_file_path, local_file_path)
         sftp_client.close()
 
         ssh_client.close()
-        
         with open(local_file_path, 'rb') as file:
             bot.send_document(chat_id, file)
-        
+
         bot.send_message(chat_id, f"File downloaded from {remote_file_path} and sent to you successfully.")
+    except paramiko.AuthenticationException as auth_error:
+        bot.send_message(chat_id, f"Authentication failed: {str(auth_error)}")
+    except paramiko.SSHException as ssh_error:
+        bot.send_message(chat_id, f"SSH error: {str(ssh_error)}")
     except Exception as e:
-        bot.send_message(chat_id, f"Error: {str(e)}")
+        bot.send_message(chat_id, f"Error in download command: {str(e)}")
+        print(f"Error in download_file_from_server: {str(e)}")
+
+
+
+# def download_file_from_server(chat_id, name, username, ip, password):
+#     try:
+#         remote_file_path = '/etc/x-ui/x-ui.db'
+#         local_file_path = f"{name}_x-ui.db"
+#         print(name, username, ip, password)
+#         with Connection(host=ip, user=username, connect_kwargs={"password": password}) as conn:
+#             conn.get(remote_file_path, local=local_file_path)
+#         print("File downloaded successfully")
+#         with open(local_file_path, 'rb') as file:
+#             bot.send_document(chat_id, file)
+
+#         bot.send_message(chat_id, f"File downloaded from {remote_file_path} and sent to you successfully.")
+#     except Exception as e:
+#         bot.send_message(chat_id, f"Error in download command: {str(e)}")
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -104,7 +123,9 @@ def download_file():
             name, username, ip, password = server.split('|')
             download_file_from_server(int("1734062356"), name, username, ip, password)
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in download file in cron job: {str(e)}")
+        
+
 def download_and_schedule():
     schedule.every().hour.do(download_file)
     while True:
@@ -117,11 +138,9 @@ def start_bot():
     try:
         bot.polling()
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in start bot: {str(e)}")
 
-# ایجاد یک ترد جدید برای اجرای برنامه‌ریزی دانلود
 schedule_thread = threading.Thread(target=download_and_schedule)
 schedule_thread.start()
 
-# اجرای ربات تلگرام
 start_bot()

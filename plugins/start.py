@@ -113,5 +113,20 @@ def callback_handler(client, callback):
 
     elif data == "activation_guide":
         message.edit_text("درحال نمایش اموزش فعال سازی...")
-        message.reply_video("https://dl.yozcourse.ir/config-1.mp4", caption="آموزش فعال سازی روی اندروید")
+        try:
+            # Sending a video tutorial on Android activation
+            client.send_video(
+                chat_id=message.chat.id,
+                video="https://dl.yozcourse.ir/config-1.mp4",
+                caption="آموزش فعال سازی روی اندروید"
+            )
+            
+            # Sending a video tutorial on iOS activation
+            client.send_video(
+                chat_id=message.chat.id,
+                video="https://dl.yozcourse.ir/config-in-apple.mp4",
+                caption="آموزش فعال سازی روی iOS"
+            )
+        except Exception as e:
+            print(f"Error sending videos: {e}")
         
