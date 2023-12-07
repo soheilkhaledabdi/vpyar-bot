@@ -6,7 +6,7 @@ import paramiko
 from fabric import Connection
 
 
-TOKEN = '6724802635:AAFA_s30tuoprHHjG9Gbf-Z6VJ4lDOVQo-4'
+TOKEN = '6495534406:AAHLkl9FJQdw42c8h0-ACs7AsgF3MVwM1L8'
 bot = telebot.TeleBot(TOKEN)
 
 def save_user_info(name, username, ip, password):
