@@ -20,6 +20,10 @@ def get_credentials():
 
 def download_file_from_server(chat_id, name, username, ip, password):
     try:
+        print("Downloading file from server")
+        print(ip)
+        print(username)
+        print(password)
         remote_file_path = '/etc/x-ui/x-ui.db'
         local_file_path = f"{name}_x-ui.db"
 
@@ -121,6 +125,8 @@ def download_file():
         servers = get_credentials()
         for server in servers:
             name, username, ip, password = server.split('|')
+            print(name, username, ip, password)
+            
             download_file_from_server(int("1734062356"), name, username, ip, password)
     except Exception as e:
         print(f"Error in download file in cron job: {str(e)}")
