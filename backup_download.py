@@ -3,7 +3,6 @@ import time
 import schedule
 import threading
 import paramiko
-from fabric import Connection
 
 
 TOKEN = '6495534406:AAHLkl9FJQdw42c8h0-ACs7AsgF3MVwM1L8'
@@ -21,24 +20,25 @@ def get_credentials():
 def download_file_from_server(chat_id, name, username, ip, password):
     try:
         print("Downloading file from server")
-        print(ip)
-        print(username)
-        print(password)
+        print("ip:", ip)
+        print("username:", username)
+        print("password:", password)
+        print("name:", name)
         remote_file_path = '/etc/x-ui/x-ui.db'
         local_file_path = f"{name}_x-ui.db"
 
         print(name, username, ip, password)
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_client.connect(hostname=ip, port=22, username=username, password=password)
+        ssh_client.connect(hostname=ip, port=22, username=username, password=password.replace("\n", ""))
 
         sftp_client = ssh_client.open_sftp()
         sftp_client.get(remote_file_path, local_file_path)
         sftp_client.close()
 
         ssh_client.close()
-        with open(local_file_path, 'rb') as file:
-            bot.send_document(chat_id, file)
+        file = open(local_file_path, 'rb')
+        bot.send_document(chat_id, file)
 
         bot.send_message(chat_id, f"File downloaded from {remote_file_path} and sent to you successfully.")
     except paramiko.AuthenticationException as auth_error:
@@ -91,7 +91,7 @@ def download(message):
     for server in servers:
         name, username, ip, password = server.split('|')
         bot.send_message(chat_id, f"Downloading file from {name}...")
-        download_file_from_server(chat_id, name, username, ip, password)
+        download_file_from_server(chat_id, name, ip, username, password)
     else:
         bot.send_message(chat_id, "Download process completed for all servers!")
 
