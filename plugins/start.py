@@ -4,17 +4,12 @@ from datetime import date
 import paramiko
 import random
 import string
-import requests
-import time
 
 
 server_host_address = "srv.vpyar.ir"
-server_ip_address = "65.109.188.118"
+server_ip_address = "65.109.209.133"
 server_username = "root"
-server_password = "rNasnER9aKHMNpimKsqj"
-# Fetching video files
-android_video_url = "https://dl.yozcourse.ir/bot/config_1.mp4"
-ios_video_url = "https://dl.yozcourse.ir/bot/config_in_apple.mp4"
+server_password = "fpvENVRbAXmELJEJwR4a"
 
 def create_user_on_linux_server(server_ip, ssh_username, ssh_password):
     random_password = ''.join(random.choices(
@@ -118,56 +113,37 @@ def callback_handler(client, callback):
     elif data == "activation_guide":
         message.edit_text("در حال نمایش اموزش فعال سازی...")
         try:
-            android_video = requests.get(android_video_url)
-            ios_video = requests.get(ios_video_url)
+            # client.send_video(
+            #         chat_id=message.chat.id,
+            #         video="https://dl.yozcourse.ir/bot/config_in_android.mp4",
+            #         caption="آموزش فعال‌سازی روی اندروید"
+            #     )
+            
+            # client.send_document(
+            #         chat_id=message.chat.id,
+            #         document="https://dl.yozcourse.ir/bot/NapsternetV.apk",
+            #         caption="فایل کانفیگ"
+            #     )
 
-            if android_video.status_code == 200 and ios_video.status_code == 200:
-                # Sending a video tutorial on Android activation
-                client.send_video(
+            client.send_video(
                     chat_id=message.chat.id,
-                    video=android_video_url,
-                    caption="آموزش فعال‌سازی روی اندروید"
-                )
-
-                # Sending a video tutorial on iOS activation
-                client.send_video(
-                    chat_id=message.chat.id,
-                    video=ios_video_url,
+                    video="https://dl.yozcourse.ir/bot/config_in_apple.mp4",
                     caption="آموزش فعال‌سازی روی iOS"
                 )
-            else:
-                print("Failed to fetch video files")
-
         except Exception as e:
             print(f"Error sending videos: {e}")
 
-        # Adding a timestamp to the message content to edit the message
-        timestamp = int(time.time())
-        new_text = f"در حال نمایش اموزش فعال سازی... ({timestamp})"
-        message.edit_text(new_text)
-
-        message.edit_text("درحال نمایش اموزش فعال سازی...")
-        try:
-            android_video = requests.get(android_video_url)
-            ios_video = requests.get(ios_video_url)
-
-            if android_video.status_code == 200 and ios_video.status_code == 200:
-        # Sending a video tutorial on Android activation
-                client.send_video(
-            chat_id=message.chat.id,
-            video=android_video_url,
-            caption="آموزش فعال‌سازی روی اندروید"
-            )
-
-        # Sending a video tutorial on iOS activation
-                client.send_video(
-            chat_id=message.chat.id,
-            video=ios_video_url,
-            caption="آموزش فعال‌سازی روی iOS"
-            )
-            else:
-                print("Failed to fetch video files")
-
-        except Exception as e:
-            print(f"Error sending videos: {e}")
+        
+        keyboard = [
+        [
+            InlineKeyboardButton("🔥دریافت اکانت تست",
+                                 callback_data="GetTestConfig"),
+        ],
+        [
+            InlineKeyboardButton("📣کانال ما", url="https://t.me/vpyar"),
+            InlineKeyboardButton("👨‍💻سفارش کافینگ شخصی ", url="https://t.me/vpyar_support")
+        ]
+        ]
+        
+        client.send_message(message.chat.id, "اموزش ها رو دیدی کانفیگتو بزنـــــــو حالشو ببر 🚀💥"  ,reply_markup=InlineKeyboardMarkup(keyboard))
         

@@ -91,7 +91,7 @@ def download(message):
     for server in servers:
         name, username, ip, password = server.split('|')
         bot.send_message(chat_id, f"Downloading file from {name}...")
-        download_file_from_server(chat_id, name, ip, username, password)
+        download_file_from_server(chat_id,name, username,ip, password)
     else:
         bot.send_message(chat_id, "Download process completed for all servers!")
 
@@ -104,7 +104,39 @@ def list_servers(message):
         bot.send_message(chat_id, f"List of servers:\n\n{server_list}")
     else:
         bot.send_message(chat_id, "No servers found!")
-        
+   
+@bot.message_handler(commands=['delete_server'])
+def delete_server(message):
+    chat_id = message.chat.id
+    try:
+        delete_param = message.text.split(' ', 1)[1].strip()
+
+        servers = get_credentials()
+        updated_servers = []
+        deleted = False
+
+        for server in servers:
+            # Split server details
+            server_info = server.split('|')
+            name, _, ip, _ = server_info
+
+            if delete_param.lower() != name.lower() and delete_param.lower() != ip.lower():
+                updated_servers.append(server)  # Retain servers that are not to be deleted
+            else:
+                deleted = True
+
+        if deleted:
+            with open('user_info.txt', 'w') as file:
+                for server in updated_servers:
+                    file.write(server)
+
+            bot.send_message(chat_id, f"Server '{delete_param}' deleted successfully!")
+        else:
+            bot.send_message(chat_id, f"Server '{delete_param}' not found!")
+
+    except IndexError:
+        bot.send_message(chat_id, "Please specify a server name or IP to delete.")
+     
         
 @bot.message_handler(commands=['help'])
 def help_command(message):
@@ -113,6 +145,7 @@ def help_command(message):
     Available commands:
     /start - Start the bot
     /add_server Name Username IP Password - Add a new server
+    /delete_server Name_or_IP - Delete a server by its name or IP
     /download - Download the file from the server
     /list_servers - View the list of servers
     /help - Show this help message
