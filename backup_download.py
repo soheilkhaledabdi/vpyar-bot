@@ -51,21 +51,6 @@ def download_file_from_server(chat_id, name, username, ip, password):
 
 
 
-# def download_file_from_server(chat_id, name, username, ip, password):
-#     try:
-#         remote_file_path = '/etc/x-ui/x-ui.db'
-#         local_file_path = f"{name}_x-ui.db"
-#         print(name, username, ip, password)
-#         with Connection(host=ip, user=username, connect_kwargs={"password": password}) as conn:
-#             conn.get(remote_file_path, local=local_file_path)
-#         print("File downloaded successfully")
-#         with open(local_file_path, 'rb') as file:
-#             bot.send_document(chat_id, file)
-
-#         bot.send_message(chat_id, f"File downloaded from {remote_file_path} and sent to you successfully.")
-#     except Exception as e:
-#         bot.send_message(chat_id, f"Error in download command: {str(e)}")
-
 @bot.message_handler(commands=['start'])
 def start(message):
     chat_id = message.chat.id
@@ -100,11 +85,12 @@ def list_servers(message):
     chat_id = message.chat.id
     servers = get_credentials()
     if servers:
-        server_list = "\n".join([f"Name: {server.split('|')[2]}, IP: {server.split('|')[0]}" for server in servers])
+        server_list = "\n".join([f"Name: {server.split('|')[0]}, IP: {server.split('|')[2]}" for server in servers])
         bot.send_message(chat_id, f"List of servers:\n\n{server_list}")
     else:
         bot.send_message(chat_id, "No servers found!")
    
+
 @bot.message_handler(commands=['delete_server'])
 def delete_server(message):
     chat_id = message.chat.id
